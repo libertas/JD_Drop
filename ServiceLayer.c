@@ -31,6 +31,7 @@ bool sl_send(char from_port, char to_port, char *data, SIMCOM_LENGTH_TYPE length
   return dl_send(sl_send_buf, length + 2);
 }
 
+#include <stdio.h>
 bool sl_receive_intr()
 {
   SIMCOM_LENGTH_TYPE length;

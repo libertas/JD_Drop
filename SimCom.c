@@ -10,9 +10,19 @@
 
 void callback0(char from, char to, char* data, SIMCOM_LENGTH_TYPE length)
 {
-  printf("callback %d, from %d, length %d\tdata:%s",\
-    to, from, length, data);
+  float *pf;
+  char ldata[12];
+  if(length == 12) {
+    for(int i = 0; i < 12; i++) {
+      ldata[i] = data[i];
+    }
+    pf = (float*)ldata;
+    printf("x=%f\ty=%f\tangle=%f\n", pf[0], pf[1], pf[2]);
+  } else {
+    printf("length=%d\n", length);
+  }
 }
+
 void callback2(char from, char to, char* data, SIMCOM_LENGTH_TYPE length)
 {
   printf("Welcome to callback2\n");
@@ -25,17 +35,11 @@ int main()
   SIMCOM_LENGTH_TYPE length;
 
   sl_config(0, callback0);
-  sl_config(1, callback0);
-  sl_config(2, callback2);
-  sl_init();
+  if(!sl_init()) {
+    printf("Can not open the port\n");
+    return -1;
+  }
 
-  sl_send(0, 2, "", 0);
-  sl_send(0, 2, "", 0);
-  sl_send(0, 0, "Hello, World!Hello, World!\n", 55);
-  sl_send(0, 1, "Hello, World!Hello, World!\n", 55);
-  sl_send(0, 0, "Hello, World!Hello, World!\n", 55);
-  sl_send(0, 1, "Hello, World!Hello, World!\n", 55);
-  sl_send(1, 2, "", 0);
 
   while(1) {
     ph_send_intr();
