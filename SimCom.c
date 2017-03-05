@@ -35,11 +35,19 @@ int main()
   SIMCOM_LENGTH_TYPE length;
 
   sl_config(0, callback0);
+
   if(!sl_init()) {
-    printf("Can not open the port\n");
+    printf("Unable to open the serial port\n");
     return -1;
   }
 
+  sl_send(0, 2, "", 0);
+  sl_send(0, 3, "", 0);
+  sl_send(0, 0, "Hello, World!Hello, World!\n", 55);
+  sl_send(0, 1, "Hello, World!Hello, World!\n", 55);
+  sl_send(0, 0, "Hello, World!Hello, World!\n", 55);
+  sl_send(0, 1, "Hello, World!Hello, World!\n", 55);
+  sl_send(1, 2, "", 0);
 
   while(1) {
     ph_send_intr();
