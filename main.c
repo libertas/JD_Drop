@@ -8,10 +8,12 @@ using namespace cv;
 using namespace std;
 
 bool running = true;
-mutex mlock;
+
+mutex frameLock;
 
 Mat camFrame;
 VideoCapture inputVideo(0);
+
 
 vector<Point> maxContour(vector<vector<Point> > contours)
 {
@@ -28,6 +30,7 @@ vector<Point> maxContour(vector<vector<Point> > contours)
   return contour;
 }
 
+
 Mat imgProcessing(Mat img)
 {
   Mat tmp;
@@ -36,6 +39,9 @@ Mat imgProcessing(Mat img)
 
   medianBlur(tmp, tmp, 3);
   threshold(tmp, tmp, 230, 255, THRESH_TOZERO);
+
+
+
   adaptiveThreshold(tmp, tmp, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY_INV, 45, 5);
 
   vector<vector<Point> > contours;
@@ -56,14 +62,16 @@ Mat imgProcessing(Mat img)
   // }
 
   return dst;
+
 }
 
 void camera_thr()
 {
   while(running) {
-    mlock.lock();
+    frameLock.lock();
     inputVideo >> camFrame;
-    mlock.unlock();
+    frameLock.unlock();
+    usleep(20000);
   }
 }
 
@@ -81,10 +89,11 @@ int main()
   clock_t lasttime = clock();
 
   while(1) {
-    mlock.lock();
+    frameLock.lock();
     img = imgProcessing(camFrame);
-    mlock.unlock();
-    imshow("Frame", img);
+    frameLock.unlock();
+
+    // imshow("Frame", img);
 
     thistime = clock();
     cout<<"T="<<double(thistime - lasttime)/1000000<<endl;
@@ -101,3 +110,4 @@ int main()
 
   return 0;
 }
+
