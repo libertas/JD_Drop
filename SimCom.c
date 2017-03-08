@@ -4,14 +4,46 @@
 #include <stdio.h>
 #include <math.h>
 #include <unistd.h>
+
 #include "ServiceLayer.h"
 #include "PhysicalLayer.h"
+
+
+#include <opencv2/opencv.hpp>
+#include <mutex>
+
+using namespace std;
+using namespace cv;
+
+extern mutex grayLock;
+extern Mat gray;
+
+
 
 #define M_ERR 0.1f
 
 float x_now = 0;
 float y_now = 0;
 float angle_now = 0;
+
+
+int gravityCenter(Mat src, CvPoint &center)
+{
+	double xsum = 0;
+	double ysum = 0;
+	for(int i = 0; i < src.rows; i++) {
+		for(int j = 0; j < src.cols; j++) {
+			if(!src.at<uchar>(i, j)) {
+				xsum += j;
+				ysum += i;
+			}
+		}
+	}
+	center.x = (int)(xsum / src.rows / src.cols);
+	center.y = (int)(ysum / src.rows / src.cols);
+	return 0;
+}
+
 
 void callback0(char from, char to, char* data, SIMCOM_LENGTH_TYPE length)
 {
@@ -68,8 +100,14 @@ int SimComMain()
   int count = 0;
   int step = 0;
 
+  CvPoint cent;
+
 
   while(1) {
+    grayLock.lock();
+    gravityCenter(gray, cent);
+    grayLock.unlock();
+
     ph_send_intr();
     sl_receive_intr();
     usleep(100);

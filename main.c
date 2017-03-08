@@ -15,6 +15,13 @@ Mat camFrame;
 VideoCapture inputVideo(0);
 
 
+std::mutex grayLock;
+
+cv::Mat gray;
+
+int wl_x_max, wl_y_max;
+
+
 vector<Point> maxContour(vector<vector<Point> > contours)
 {
   vector<Point> contour;
@@ -71,8 +78,18 @@ void camera_thr()
     frameLock.lock();
     inputVideo >> camFrame;
     frameLock.unlock();
+    wl_x_max = camFrame.cols;
+    wl_y_max = camFrame.rows;
     usleep(20000);
   }
+}
+
+
+int SimComMain();
+
+void simcom_thr()
+{
+  SimComMain();
 }
 
 
@@ -82,6 +99,7 @@ int main()
   char c;
 
   thread ct(camera_thr);
+  thread st(simcom_thr);
 
   usleep(1000);
 
@@ -92,6 +110,10 @@ int main()
     frameLock.lock();
     img = imgProcessing(camFrame);
     frameLock.unlock();
+
+    grayLock.lock();
+    gray = img;
+    grayLock.unlock();
 
     // imshow("Frame", img);
 
