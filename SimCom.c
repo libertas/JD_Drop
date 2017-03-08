@@ -1,8 +1,6 @@
 #include "SimCom.h"
 
 
-#ifdef TEST_SERVICE
-
 #include <stdio.h>
 #include <math.h>
 #include <unistd.h>
@@ -52,7 +50,7 @@ void move_to_point(float x, float y, float angle) {
   sl_send(0, 0, pi, 12);
 }
 
-int main()
+int SimComMain()
 {
   char c;
   char s[200];
@@ -97,54 +95,3 @@ int main()
   return 0;
 }
 
-#endif
-
-
-#ifdef TEST_DATALINK
-
-#include <stdio.h>
-#include "DataLinkLayer.h"
-#include "PhysicalLayer.h"
-
-int main()
-{
-  char c;
-  char s[200];
-  SIMCOM_LENGTH_TYPE length;
-
-  dl_init();
-
-  dl_send("Hello, World!\nHello, World!\nHello, World!\nHello, World!\n", 56);
-  ph_send_intr();
-  dl_receive(s, &length);
-  s[length] = 0;
-  printf("%d\n%s", length, s);
-
-  return 0;
-}
-
-#endif
-
-
-#ifdef TEST_PHYSICAL
-
-#include <stdio.h>
-#include "PhysicalLayer.h"
-
-int main()
-{
-  unsigned char c;
-
-  ph_init();
-
-  for(c = 0; c < 0x80; c++) {
-    ph_send(c);
-  }
-  ph_send_intr();
-  while(ph_receive((char*)&c)) {
-    putchar(c);
-  }
-
-  return 0;
-}
-#endif
