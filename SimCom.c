@@ -93,7 +93,7 @@ bool check_pos(float *ox, float *oy)
 	for(int i = 0; i < CHECK_POINT_NUM; i++) {
 	}
 	
-	return true;
+	return false;
 }
 
 int SimComMain()
@@ -108,6 +108,8 @@ int SimComMain()
   if(!sl_init()) {
     printf("Unable to open the serial port\n");
     return -1;
+  } else {
+    printf("Serial port opened\n");
   }
 
 
@@ -126,7 +128,7 @@ int SimComMain()
     ph_send_intr();
     sl_receive_intr();
     usleep(100);
-    if(count < 5) {
+    if(count < 4000) {
       count++;
     } else {
       if(check_pos(&offset_x, &offset_y) ){

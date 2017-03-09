@@ -74,7 +74,6 @@ void ph_send_intr()
     You must call this function timely to send the data in the queue
     This function must be modified to use different types of physical devices
   */
-  #if (defined TEST_PHYSICAL) || (defined TEST_DATALINK) || (defined TEST_SERVICE)
   char c;
   while(out_char_queue(&ph_send_queue, &c)) {
     ss << c;
@@ -85,6 +84,5 @@ void ph_send_intr()
     d = ss.get();
     ph_receive_intr(d);
   }
-
-  #endif
 }
+
