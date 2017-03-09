@@ -101,8 +101,6 @@ int main()
   thread ct(camera_thr);
   thread st(simcom_thr);
 
-  usleep(1000);
-
   clock_t thistime;
   clock_t lasttime = clock();
 
@@ -118,7 +116,7 @@ int main()
     // imshow("Frame", img);
 
     thistime = clock();
-    cout<<"T="<<double(thistime - lasttime)/1000000<<endl;
+    // cout<<"T="<<double(thistime - lasttime)/1000000<<endl;
     lasttime = thistime;
 
     c = waitKey(10);
@@ -129,6 +127,7 @@ int main()
 
   running = false;
   ct.join();
+  st.join();
 
   return 0;
 }

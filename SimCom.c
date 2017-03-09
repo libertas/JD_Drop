@@ -15,6 +15,9 @@
 using namespace std;
 using namespace cv;
 
+
+extern bool running;
+
 extern mutex grayLock;
 extern Mat gray;
 
@@ -82,6 +85,17 @@ void move_to_point(float x, float y, float angle) {
   sl_send(0, 0, pi, 12);
 }
 
+#define CHECK_POINT_NUM 1
+bool check_pos(float *ox, float *oy)
+{
+	float check_points[CHECK_POINT_NUM ][3] = {{0, 0, 0,}};
+	
+	for(int i = 0; i < CHECK_POINT_NUM; i++) {
+	}
+	
+	return true;
+}
+
 int SimComMain()
 {
   char c;
@@ -101,30 +115,35 @@ int SimComMain()
   int step = 0;
 
   CvPoint cent;
+  float offset_x = 0;
+  float offset_y = 0;
+  float offset_ratio_x = 0.001f;
+  float offset_ratio_y = 0.001f;
 
 
-  while(1) {
-    grayLock.lock();
-    gravityCenter(gray, cent);
-    grayLock.unlock();
 
+  while(running) {
     ph_send_intr();
     sl_receive_intr();
     usleep(100);
-    if(count < 4000) {
+    if(count < 5) {
       count++;
     } else {
-      float x[] = {0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0};
-      float y[] = {2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0};
-      float angle[] = {0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0};
-      move_to_point(x[step], y[step], angle[step]);
-      printf("moving to %f, %f, %f\n", x[step], y[step], angle[step]);
-      if(step < 14\
-        && fabsf(x[step] - x_now) < M_ERR\
-        && fabsf(y[step] - y_now) < M_ERR\
-        && fabsf(angle[step] - angle_now) < M_ERR) {
-        step++;
-        usleep(500000);
+      if(check_pos(&offset_x, &offset_y) ){
+	  } else {
+	      float x[] = {0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0};
+	      float y[] = {2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0};
+	      float angle[] = {0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0};
+	      move_to_point(x[step], y[step], angle[step]);
+	      printf("moving to %f, %f, %f\n", x[step] + offset_x, y[step] + offset_y, angle[step]);
+	      if(step < 14\
+	        && fabsf(x[step] + offset_x - x_now) < M_ERR\
+	        && fabsf(y[step] + offset_y - y_now) < M_ERR\
+	        && fabsf(angle[step] - angle_now) < M_ERR) {
+	
+	        step++;
+	        usleep(500000);
+	      }
       }
       count = 0;
     }
