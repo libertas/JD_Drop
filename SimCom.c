@@ -11,6 +11,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <mutex>
+#include <thread>
 
 using namespace std;
 using namespace cv;
@@ -85,69 +86,127 @@ void move_to_point(float x, float y, float angle) {
   sl_send(0, 0, pi, 12);
 }
 
+#define CHK_ERR 0.2f
 #define CHECK_POINT_NUM 1
 bool check_pos(float *ox, float *oy)
 {
-	float check_points[CHECK_POINT_NUM ][3] = {{0, 0, 0,}};
+	bool near_check_point = false;
 	
-	for(int i = 0; i < CHECK_POINT_NUM; i++) {
+	float check_points[CHECK_POINT_NUM ][2] = {{0, 0}};
+	int check_point_i;
+	
+	for(check_point_i = 0; check_point_i < CHECK_POINT_NUM; check_point_i++) {
+		if(fabsf(x_now - check_points[check_point_i][0]) < CHK_ERR\
+	        && fabsf(x_now - check_points[check_point_i][1]) < CHK_ERR)  {
+				near_check_point = true;
+		}
 	}
 	
-	return false;
+	if(!near_check_point) {
+		return false;
+	}
+	
+	float x_ratio = 20.0f;
+	float y_ratio = -20.0f;
+	float x_err, y_err;
+	
+	do {
+		 CvPoint cent;
+		 
+		 grayLock.lock();
+		 
+		 gravityCenter(gray, cent);
+		 int gray_x = gray.cols;
+		 int gray_y = gray.rows;
+		 
+		 grayLock.unlock();
+		 
+		 x_err = (((float)(cent.x)  - gray_x / 2) / gray_x);
+		 y_err = (((float)(cent.y)  - gray_y / 2) / gray_y);
+		 
+		 move_to_point(x_now + x_ratio * x_err, y_now + y_ratio * y_err, 0.0f);
+		 printf("moving to %f, %f, %f\n", x_now + x_ratio * x_err, y_now + y_ratio * y_err, 0.0f);
+		 
+		 printf("cx=%d, cy=%d\n", cent.x, cent.y);
+		 printf("x_err=%f, y_err=%f\n", x_err, y_err);
+		 usleep(200000);
+     } while(1);//(fabsf(x_err ) > 5 || fabsf(y_err) > 5);
+	 
+	 *ox = x_now - check_points[check_point_i][0];
+	 *oy = y_now - check_points[check_point_i][1];
+	 
+	 printf("ox=%f, oy=%f\n", *ox, *oy);
+	
+	return near_check_point;
+}
+
+void SimComDaemonSend()
+{
+	while(running) {
+		ph_send_intr();
+		usleep(100);
+	}
+}
+
+void SimComDaemonReceive()
+{
+	while(running) {
+		sl_receive_intr();
+		usleep(100);
+	}
+}
+
+void SimComDaemon()
+{
+	  sl_config(0, callback0);
+	  sl_config(1, callback1);
+	
+	  if(!sl_init()) {
+	    printf("Unable to open the serial port\n");
+	    return;
+	  } else {
+	    printf("Serial port opened\n");
+	  }
+  
+	thread sds(SimComDaemonSend);
+	thread sdr(SimComDaemonReceive);
+	
+	sds.join();
+	sdr.join();
 }
 
 int SimComMain()
 {
   char c;
   char s[200];
-  SIMCOM_LENGTH_TYPE length;
-
-  sl_config(0, callback0);
-  sl_config(1, callback1);
-
-  if(!sl_init()) {
-    printf("Unable to open the serial port\n");
-    return -1;
-  } else {
-    printf("Serial port opened\n");
-  }
-
 
   int count = 0;
   int step = 0;
 
-  CvPoint cent;
   float offset_x = 0;
   float offset_y = 0;
-  float offset_ratio_x = 0.001f;
-  float offset_ratio_y = 0.001f;
-
-
 
   while(running) {
-    ph_send_intr();
-    sl_receive_intr();
-    usleep(100);
-    if(count < 4000) {
-      count++;
-    } else {
-      if(check_pos(&offset_x, &offset_y) ){
-	  } else {
-	      float x[] = {0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0};
-	      float y[] = {2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0};
-	      float angle[] = {0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0};
-	      move_to_point(x[step], y[step], angle[step]);
-	      printf("moving to %f, %f, %f\n", x[step] + offset_x, y[step] + offset_y, angle[step]);
-	      if(step < 14\
-	        && fabsf(x[step] + offset_x - x_now) < M_ERR\
-	        && fabsf(y[step] + offset_y - y_now) < M_ERR\
-	        && fabsf(angle[step] - angle_now) < M_ERR) {
-	
-	        step++;
-	        usleep(500000);
-	      }
+	  usleep(400000);
+    
+    {
+      float x[] = {0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0};
+      float y[] = {2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0};
+      float angle[] = {0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0};
+      
+check_pos(&offset_x, &offset_y) ;
+      
+      move_to_point(x[step], y[step], angle[step]);
+      printf("moving to %f, %f, %f\n", x[step] + offset_x, y[step] + offset_y, angle[step]);
+      if(step < 14\
+        && fabsf(x[step] + offset_x - x_now) < M_ERR\
+        && fabsf(y[step] + offset_y - y_now) < M_ERR\
+        && fabsf(angle[step] - angle_now) < M_ERR) {
+
+        check_pos(&offset_x, &offset_y) ;
+        usleep(500000);
+        step++;
       }
-      count = 0;
     }
   }
 

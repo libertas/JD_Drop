@@ -92,6 +92,7 @@ void simcom_thr()
   SimComMain();
 }
 
+void SimComDaemon();
 
 int main()
 {
@@ -100,6 +101,7 @@ int main()
 
   thread ct(camera_thr);
   thread st(simcom_thr);
+  thread sd(SimComDaemon);
 
   clock_t thistime;
   clock_t lasttime = clock();
@@ -128,6 +130,7 @@ int main()
   running = false;
   ct.join();
   st.join();
+  sd.join();
 
   return 0;
 }
