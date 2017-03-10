@@ -40,35 +40,12 @@ vector<Point> maxContour(vector<vector<Point> > contours)
 
 Mat imgProcessing(Mat img)
 {
-  Mat tmp;
+ Mat tmp;
 
   cvtColor(img, tmp, CV_BGR2GRAY);
+  threshold(tmp, tmp, 200, 255, THRESH_BINARY);
 
-  medianBlur(tmp, tmp, 3);
-  threshold(tmp, tmp, 230, 255, THRESH_TOZERO);
-
-
-
-  adaptiveThreshold(tmp, tmp, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY_INV, 45, 5);
-
-  vector<vector<Point> > contours;
-
-  findContours(tmp, contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
-  vector<Point> contour = maxContour(contours);
-  contours.clear();
-  contours.push_back(contour);
-
-
-  Mat dst;
-  //dst.create(img.rows, img.cols, 1);
-  threshold(tmp, dst, 255, 255, THRESH_TOZERO);
-  drawContours(dst, contours, 0, Scalar(255), CV_FILLED, 8, vector<Vec4i>(), 0, Point());
-
-  // for (int i = 0; i < contours.size(); i++ ){
-  //   drawContours(tmp, contours, i, Scalar(255), CV_FILLED, 8, vector<Vec4i>(), 0, Point() );
-  // }
-
-  return dst;
+  return tmp;
 
 }
 

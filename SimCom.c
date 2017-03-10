@@ -69,7 +69,7 @@ void callback0(char from, char to, char* data, SIMCOM_LENGTH_TYPE length)
 
 void callback1(char from, char to, char* data, SIMCOM_LENGTH_TYPE length)
 {
-  printf("Callback 1:");
+  printf("\tCallback 1:");
   for(SIMCOM_LENGTH_TYPE i = 0; i < length; i++) {
     putchar(data[i]);
   }
@@ -151,6 +151,7 @@ void SimComDaemonSend()
 void SimComDaemonReceive()
 {
 	while(running) {
+		ph_receive_intr();
 		sl_receive_intr();
 		usleep(100);
 	}

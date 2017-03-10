@@ -2,9 +2,12 @@
 
 #include "PhysicalLayer.h"
 
+#include <mutex>
+
 using namespace std;
 using namespace LibSerial;
 
+mutex ssLock;
 SerialStream ss;
 
 char ph_send_queue_buf[PH_BUF_LEN];
@@ -68,6 +71,17 @@ bool ph_receive_intr(char data)
   return in_char_queue(&ph_receive_queue, data);
 }
 
+void ph_receive_intr()
+{
+  if(ss.rdbuf()->in_avail()) {
+    char d;
+    ssLock.lock();
+    d = ss.get();
+    ssLock.unlock();
+    ph_receive_intr(d);
+  }
+}
+
 void ph_send_intr()
 {
   /*
@@ -75,14 +89,10 @@ void ph_send_intr()
     This function must be modified to use different types of physical devices
   */
   char c;
+  ssLock.lock();
   while(out_char_queue(&ph_send_queue, &c)) {
     ss << c;
   }
-
-  if(ss.rdbuf()->in_avail()) {
-    char d;
-    d = ss.get();
-    ph_receive_intr(d);
-  }
+  ssLock.unlock();
 }
 
