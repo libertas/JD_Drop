@@ -22,28 +22,28 @@ cv::Mat gray;
 int wl_x_max, wl_y_max;
 
 
-vector<Point> maxContour(vector<vector<Point> > contours)
-{
-  vector<Point> contour;
-  double area;
-  double maxArea = 0;
-  for(auto i: contours) {
-    area = contourArea(i);
-    if(area > maxArea) {
-      maxArea = area;
-      contour = i;
-    }
-  }
-  return contour;
-}
+//vector<Point> maxContour(vector<vector<Point> > contours)
+//{
+  //vector<Point> contour;
+  //double area;
+  //double maxArea = 0;
+  //for(auto i: contours) {
+    //area = contourArea(i);
+    //if(area > maxArea) {
+      //maxArea = area;
+      //contour = i;
+    //}
+  //}
+  //return contour;
+//}
 
 
 Mat imgProcessing(Mat img)
 {
- Mat tmp;
+   Mat tmp;
 
   cvtColor(img, tmp, CV_BGR2GRAY);
-  threshold(tmp, tmp, 200, 255, THRESH_BINARY);
+  threshold(tmp, tmp, 160, 255, THRESH_BINARY);
 
   return tmp;
 
@@ -57,7 +57,7 @@ void camera_thr()
     frameLock.unlock();
     wl_x_max = camFrame.cols;
     wl_y_max = camFrame.rows;
-    usleep(20000);
+    usleep(2000);
   }
 }
 
@@ -92,13 +92,13 @@ int main()
     gray = img;
     grayLock.unlock();
 
-    // imshow("Frame", img);
+    imshow("Frame", img);
 
     thistime = clock();
-    // cout<<"T="<<double(thistime - lasttime)/1000000<<endl;
+    //cout<<"\t\tT="<<double(thistime - lasttime)/1000000<<endl;
     lasttime = thistime;
 
-    c = waitKey(10);
+    c = waitKey(1);
     if(c == 27) {
       break;
     }

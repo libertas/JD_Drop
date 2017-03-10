@@ -33,6 +33,7 @@ float angle_now = 0;
 
 int gravityCenter(Mat src, CvPoint &center)
 {
+	int areasum = 0;
 	double xsum = 0;
 	double ysum = 0;
 	for(int i = 0; i < src.rows; i++) {
@@ -40,11 +41,20 @@ int gravityCenter(Mat src, CvPoint &center)
 			if(!src.at<uchar>(i, j)) {
 				xsum += j;
 				ysum += i;
+				areasum++;
 			}
 		}
 	}
-	center.x = (int)(xsum / src.rows / src.cols);
-	center.y = (int)(ysum / src.rows / src.cols);
+	
+	//if(((float)areasum) / src.rows / src.cols > 0.001f)
+        {
+		center.x = (int)(xsum / src.rows / src.cols);
+		center.y = (int)(ysum / src.rows / src.cols);
+	}// else {
+	//	center.x = src.cols / 2;
+	//	center.y = src.rows / 2;
+	//}
+	
 	return 0;
 }
 
@@ -92,13 +102,14 @@ bool check_pos(float *ox, float *oy)
 {
 	bool near_check_point = false;
 	
-	float check_points[CHECK_POINT_NUM ][2] = {{0, 0}};
+	float check_points[CHECK_POINT_NUM ][2] = {{0.0f, 0.0f}};
 	int check_point_i;
 	
 	for(check_point_i = 0; check_point_i < CHECK_POINT_NUM; check_point_i++) {
 		if(fabsf(x_now - check_points[check_point_i][0]) < CHK_ERR\
 	        && fabsf(x_now - check_points[check_point_i][1]) < CHK_ERR)  {
 				near_check_point = true;
+				break;
 		}
 	}
 	
@@ -106,8 +117,8 @@ bool check_pos(float *ox, float *oy)
 		return false;
 	}
 	
-	float x_ratio = 20.0f;
-	float y_ratio = -20.0f;
+	float x_ratio = 1.5f;
+	float y_ratio = -1.0f;
 	float x_err, y_err;
 	
 	do {
@@ -121,11 +132,19 @@ bool check_pos(float *ox, float *oy)
 		 
 		 grayLock.unlock();
 		 
-		 x_err = (((float)(cent.x)  - gray_x / 2) / gray_x);
-		 y_err = (((float)(cent.y)  - gray_y / 2) / gray_y);
+		 x_err = (float)(cent.x) / gray_x - 0.5f;
+		 y_err = (float)(cent.y) / gray_y - 0.5f;
 		 
-		 move_to_point(x_now + x_ratio * x_err, y_now + y_ratio * y_err, 0.0f);
-		 printf("moving to %f, %f, %f\n", x_now + x_ratio * x_err, y_now + y_ratio * y_err, 0.0f);
+		 if(!(isnormal(x_err) && isnormal(y_err))) {
+			 continue;
+		 }
+		 
+		 move_to_point(check_points[check_point_i][0] + x_ratio * x_err,\
+		   check_points[check_point_i][1] + y_ratio * y_err,\
+		   0.0f);
+		 printf("moving to %f, %f, %f\n", check_points[check_point_i][0] + x_ratio * x_err,\
+		   check_points[check_point_i][1] + y_ratio * y_err,\
+		   0.0f);
 		 
 		 printf("cx=%d, cy=%d\n", cent.x, cent.y);
 		 printf("x_err=%f, y_err=%f\n", x_err, y_err);
@@ -144,7 +163,7 @@ void SimComDaemonSend()
 {
 	while(running) {
 		ph_send_intr();
-		usleep(100);
+		usleep(80);
 	}
 }
 
@@ -153,7 +172,7 @@ void SimComDaemonReceive()
 	while(running) {
 		ph_receive_intr();
 		sl_receive_intr();
-		usleep(100);
+		usleep(80);
 	}
 }
 
