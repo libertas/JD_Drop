@@ -33,28 +33,22 @@ float angle_now = 0;
 
 int gravityCenter(Mat src, CvPoint &center)
 {
-	int areasum = 0;
+	int counter = 0;
 	double xsum = 0;
 	double ysum = 0;
 	for(int i = 0; i < src.rows; i++) {
 		for(int j = 0; j < src.cols; j++) {
-			if(!src.at<uchar>(i, j)) {
+			if(src.at<uchar>(i, j) != 0) {
 				xsum += j;
 				ysum += i;
-				areasum++;
+				counter++;
 			}
 		}
 	}
 	
-	//if(((float)areasum) / src.rows / src.cols > 0.001f)
-        {
-		center.x = (int)(xsum / src.rows / src.cols);
-		center.y = (int)(ysum / src.rows / src.cols);
-	}// else {
-	//	center.x = src.cols / 2;
-	//	center.y = src.rows / 2;
-	//}
-	
+	center.x = cvRound(xsum / counter);
+	center.y = cvRound(ysum / counter);
+
 	return 0;
 }
 
@@ -117,8 +111,8 @@ bool check_pos(float *ox, float *oy)
 		return false;
 	}
 	
-	float x_ratio = 1.5f;
-	float y_ratio = -1.0f;
+	float x_ratio = -0.3f;
+	float y_ratio = 0.3f;
 	float x_err, y_err;
 	
 	do {

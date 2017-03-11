@@ -71,6 +71,8 @@ void simcom_thr()
 
 void SimComDaemon();
 
+int gravityCenter(Mat src, CvPoint &center);
+
 int main()
 {
   Mat img;
@@ -90,9 +92,13 @@ int main()
 
     grayLock.lock();
     gray = img;
+    Mat tmp;
+    CvPoint cent;
+    gravityCenter(gray, cent);
+    cvtColor(gray, tmp, CV_GRAY2BGR);
+    circle(tmp, cent, 10, Scalar(0, 200, 200));
+    imshow("Frame", tmp);
     grayLock.unlock();
-
-    imshow("Frame", img);
 
     thistime = clock();
     //cout<<"\t\tT="<<double(thistime - lasttime)/1000000<<endl;
