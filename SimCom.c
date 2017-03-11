@@ -35,6 +35,7 @@ float angle_now = 0;
 int gravityCenter(Mat src, CvPoint &center)
 {
 	assert(src.channels() == 1);
+	int count = 0;
 	double xsum = 0;
 	double ysum = 0;
 	for(int i = 0; i < src.rows; i++) {
@@ -42,12 +43,13 @@ int gravityCenter(Mat src, CvPoint &center)
 			if(src.at<uchar>(i, j) != 0) {
 				xsum += j;
 				ysum += i;
+				count++;
 			}
 		}
 	}
 	
-	center.x = (int)(xsum / src.rows / src.cols);
-	center.y = (int)(ysum / src.rows / src.cols);
+	center.x = cvRound(xsum / count);
+	center.y = cvRound(ysum / count);
 	
 	return 0;
 }
