@@ -1,6 +1,7 @@
 #include "SimCom.h"
 
 
+#include <assert.h>
 #include <stdio.h>
 #include <math.h>
 #include <unistd.h>
@@ -33,27 +34,20 @@ float angle_now = 0;
 
 int gravityCenter(Mat src, CvPoint &center)
 {
-	int areasum = 0;
+	assert(src.channels() == 1);
 	double xsum = 0;
 	double ysum = 0;
 	for(int i = 0; i < src.rows; i++) {
 		for(int j = 0; j < src.cols; j++) {
-			if(!src.at<uchar>(i, j)) {
+			if(src.at<uchar>(i, j) != 0) {
 				xsum += j;
 				ysum += i;
-				areasum++;
 			}
 		}
 	}
 	
-	//if(((float)areasum) / src.rows / src.cols > 0.001f)
-        {
-		center.x = (int)(xsum / src.rows / src.cols);
-		center.y = (int)(ysum / src.rows / src.cols);
-	}// else {
-	//	center.x = src.cols / 2;
-	//	center.y = src.rows / 2;
-	//}
+	center.x = (int)(xsum / src.rows / src.cols);
+	center.y = (int)(ysum / src.rows / src.cols);
 	
 	return 0;
 }
@@ -79,7 +73,7 @@ void callback0(char from, char to, char* data, SIMCOM_LENGTH_TYPE length)
 
 void callback1(char from, char to, char* data, SIMCOM_LENGTH_TYPE length)
 {
-  printf("\tCallback 1:");
+  printf("\tCallback 1 from port %d:", (unsigned char)from);
   for(SIMCOM_LENGTH_TYPE i = 0; i < length; i++) {
     putchar(data[i]);
   }
@@ -94,69 +88,6 @@ void move_to_point(float x, float y, float angle) {
   char *pi;
   pi = (char*)tmp;
   sl_send(0, 0, pi, 12);
-}
-
-#define CHK_ERR 0.2f
-#define CHECK_POINT_NUM 1
-bool check_pos(float *ox, float *oy)
-{
-	bool near_check_point = false;
-	
-	float check_points[CHECK_POINT_NUM ][2] = {{0.0f, 0.0f}};
-	int check_point_i;
-	
-	for(check_point_i = 0; check_point_i < CHECK_POINT_NUM; check_point_i++) {
-		if(fabsf(x_now - check_points[check_point_i][0]) < CHK_ERR\
-	        && fabsf(x_now - check_points[check_point_i][1]) < CHK_ERR)  {
-				near_check_point = true;
-				break;
-		}
-	}
-	
-	if(!near_check_point) {
-		return false;
-	}
-	
-	float x_ratio = 1.5f;
-	float y_ratio = -1.0f;
-	float x_err, y_err;
-	
-	do {
-		 CvPoint cent;
-		 
-		 grayLock.lock();
-		 
-		 gravityCenter(gray, cent);
-		 int gray_x = gray.cols;
-		 int gray_y = gray.rows;
-		 
-		 grayLock.unlock();
-		 
-		 x_err = (float)(cent.x) / gray_x - 0.5f;
-		 y_err = (float)(cent.y) / gray_y - 0.5f;
-		 
-		 if(!(isnormal(x_err) && isnormal(y_err))) {
-			 continue;
-		 }
-		 
-		 move_to_point(check_points[check_point_i][0] + x_ratio * x_err,\
-		   check_points[check_point_i][1] + y_ratio * y_err,\
-		   0.0f);
-		 printf("moving to %f, %f, %f\n", check_points[check_point_i][0] + x_ratio * x_err,\
-		   check_points[check_point_i][1] + y_ratio * y_err,\
-		   0.0f);
-		 
-		 printf("cx=%d, cy=%d\n", cent.x, cent.y);
-		 printf("x_err=%f, y_err=%f\n", x_err, y_err);
-		 usleep(200000);
-     } while(1);//(fabsf(x_err ) > 5 || fabsf(y_err) > 5);
-	 
-	 *ox = x_now - check_points[check_point_i][0];
-	 *oy = y_now - check_points[check_point_i][1];
-	 
-	 printf("ox=%f, oy=%f\n", *ox, *oy);
-	
-	return near_check_point;
 }
 
 void SimComDaemonSend()
@@ -197,38 +128,48 @@ void SimComDaemon()
 
 int SimComMain()
 {
-  char c;
-  char s[200];
-
-  int count = 0;
-  int step = 0;
-
-  float offset_x = 0;
-  float offset_y = 0;
-
+  CvPoint cent;
+  uint16_t xy[2];
+  char *pc = (char*)xy;
   while(running) {
-	  usleep(400000);
-    
-    {
-      float x[] = {0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0};
-      float y[] = {2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0};
-      float angle[] = {0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0};
-      
-check_pos(&offset_x, &offset_y) ;
-      
-      move_to_point(x[step], y[step], angle[step]);
-      printf("moving to %f, %f, %f\n", x[step] + offset_x, y[step] + offset_y, angle[step]);
-      if(step < 14\
-        && fabsf(x[step] + offset_x - x_now) < M_ERR\
-        && fabsf(y[step] + offset_y - y_now) < M_ERR\
-        && fabsf(angle[step] - angle_now) < M_ERR) {
-
-        check_pos(&offset_x, &offset_y) ;
-        usleep(500000);
-        step++;
-      }
-    }
+	  grayLock.lock();
+	  
+	  gravityCenter(gray, cent);
+	  
+	  grayLock.unlock();
+	  
+	  xy[0] = cent.x;
+	  xy[1] = cent.y;
+	  sl_send(2, 2, pc, 4);
+	  
+	  usleep(50000);
   }
+	
+  //char c;
+
+  //int count = 0;
+  //int step = 0;
+
+  //float offset_x = 0;
+  //float offset_y = 0;
+
+  //while(running) {
+	  //usleep(400000);
+	  
+      //float x[] = {0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0};
+      //float y[] = {2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0};
+      //float angle[] = {0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0};
+      
+      //move_to_point(x[step], y[step], angle[step]);
+      //printf("moving to %f, %f, %f\n", x[step] + offset_x, y[step] + offset_y, angle[step]);
+      //if(step < 14\
+        //&& fabsf(x[step] + offset_x - x_now) < M_ERR\
+        //&& fabsf(y[step] + offset_y - y_now) < M_ERR\
+        //&& fabsf(angle[step] - angle_now) < M_ERR) {
+        //usleep(500000);
+        //step++;
+      //}
+  //}
 
   return 0;
 }
