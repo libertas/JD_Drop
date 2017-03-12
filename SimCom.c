@@ -96,7 +96,7 @@ void SimComDaemonSend()
 {
 	while(running) {
 		ph_send_intr();
-		usleep(80);
+		usleep(10);
 	}
 }
 
@@ -105,7 +105,7 @@ void SimComDaemonReceive()
 	while(running) {
 		ph_receive_intr();
 		sl_receive_intr();
-		usleep(80);
+		usleep(10);
 	}
 }
 
@@ -133,18 +133,18 @@ int SimComMain()
   CvPoint cent;
   uint16_t xy[2];
   char *pc = (char*)xy;
-  while(running) {
-	  grayLock.lock();
+  if(running) {
+	  //grayLock.lock();
 	  
 	  gravityCenter(gray, cent);
 	  
-	  grayLock.unlock();
+	  //grayLock.unlock();
 	  
 	  xy[0] = cent.x;
 	  xy[1] = cent.y;
 	  sl_send(2, 2, pc, 4);
 	  
-	  usleep(50000);
+	  //usleep(50000);
   }
 	
   //char c;
