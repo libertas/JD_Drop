@@ -44,9 +44,8 @@ bool triThreshold(Mat src, Mat &dst, uint8_t num, uint8_t high, uint8_t low)
 		clock_t starttime = clock();
 		Mat tmp(src.rows, src.cols, CV_8U, Scalar(0));
 
-		#pragma omp parallel for
+		// #pragma omp parallel for num_threads(8)
 		for(int i = 0; i < src.rows; i++) {
-			cout<<"\t\t\tparallel for:"<<i<<endl;
 			for(int j = 0; j < src.cols; j++) {
 				bool flag = true;
 				for(int k = 0; k < 3; k++) {
@@ -68,7 +67,7 @@ bool triThreshold(Mat src, Mat &dst, uint8_t num, uint8_t high, uint8_t low)
 	}
 
 		dst = tmp;
-		cout<<"\t\tT="<<double(clock()-starttime)/1000.0<<endl;
+		//cout<<"\t\tT="<<double(clock()-starttime)/1000.0<<endl;
 		return true;
 	} else {
 		return false;
@@ -80,7 +79,7 @@ Mat imgProcessing(Mat img)
 {
    Mat tmp;
 
-  triThreshold(img, tmp, 2, 180, 120);
+  triThreshold(img, tmp, 2, 140, 100);
   //triThreshold(img, tmp, 2, 140, 180);
 
   return tmp;
@@ -132,14 +131,14 @@ int main()
     //grayLock.lock();
     gray = img;
 	SimComMain();
-	//imshow("gray", gray);
+	imshow("gray", gray);
     //grayLock.unlock();
 
     c = waitKey(1);
     if(c == 27) {
       break;
     }
-    cout<<"T="<<double(clock()-lasttime)/1000<<endl;
+    //cout<<"  T="<<double(clock()-lasttime)/1000<<endl;
   }
 
   running = false;
