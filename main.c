@@ -79,8 +79,7 @@ Mat imgProcessing(Mat img)
 {
    Mat tmp;
 
-  triThreshold(img, tmp, 2, 140, 100);
-  //triThreshold(img, tmp, 2, 140, 180);
+  triThreshold(img, tmp, 2, 170, 170);
 
   return tmp;
 
@@ -106,7 +105,11 @@ void simcom_thr()
   SimComMain();
 }
 
+
 void SimComDaemon();
+void SimComDaemonReceive();
+void SimComDaemonSend();
+
 
 int main()
 {
@@ -132,6 +135,7 @@ int main()
     gray = img;
 	SimComMain();
 	imshow("gray", gray);
+    moveWindow("gray", 0, 0);
     //grayLock.unlock();
 
     c = waitKey(1);

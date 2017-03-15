@@ -7,6 +7,8 @@
 using namespace std;
 using namespace LibSerial;
 
+mutex ph_send_lock;
+
 mutex ssLock;
 SerialStream ss;
 
@@ -49,8 +51,16 @@ bool ph_send(char data)
   if(!ph_initialized) {
     return false;
   }
+  
+  bool result;
+  
+  ph_send_lock.lock();
+  
+  result = in_char_queue(&ph_send_queue, data);
+  
+  ph_send_lock.unlock();
 
-  return in_char_queue(&ph_send_queue, data);
+  return result;
 }
 
 bool ph_receive(char *data)
@@ -89,10 +99,15 @@ void ph_send_intr()
     This function must be modified to use different types of physical devices
   */
   char c;
+  
   ssLock.lock();
+  ph_send_lock.lock();
+  
   while(out_char_queue(&ph_send_queue, &c)) {
     ss << c;
   }
+  
+  ph_send_lock.unlock();
   ssLock.unlock();
 }
 
