@@ -27,10 +27,10 @@ bool ph_init()
   init_char_queue(&ph_receive_queue, ph_receive_queue_buf, PH_BUF_LEN);
 
 /*
-  ss.Open("/dev/ttyUSB0", ios_base::in | ios_base::out,\
+  ss.Open("/dev/ttyAMA0", ios_base::in | ios_base::out,\
     SerialStreamBuf::BAUD_115200, SerialStreamBuf::CHAR_SIZE_8, SerialStreamBuf::PARITY_NONE, 1, SerialStreamBuf::FLOW_CONTROL_NONE);
 */
-  ss.Open("/dev/ttyUSB0", ios_base::in | ios_base::out);
+  ss.Open("/dev/ttyAMA0", ios_base::in | ios_base::out);
   if(!ss.IsOpen()) {
     return false;
   }
