@@ -80,6 +80,8 @@ Mat imgProcessing(Mat img)
    Mat tmp;
 
   triThreshold(img, tmp, 2, 170, 170);
+  //medianBlur(tmp, tmp, 5);
+  GaussianBlur(tmp, tmp, Size(5, 5), 1.5);
 
   return tmp;
 
