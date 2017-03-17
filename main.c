@@ -40,7 +40,6 @@ int wl_x_max, wl_y_max;
 bool triThreshold(Mat src, Mat &dst, uint8_t num, uint8_t high, uint8_t low)
 {
 	if(src.channels() == 3 && num >= 0 && num <= 2) {
-		clock_t starttime = clock();
 		Mat tmp(src.rows, src.cols, CV_8U, Scalar(0));
 
 		for(int i = 0; i < src.rows; i++) {
@@ -65,7 +64,6 @@ bool triThreshold(Mat src, Mat &dst, uint8_t num, uint8_t high, uint8_t low)
 	}
 
 		dst = tmp;
-		cout<<"\t\tT="<<double(clock()-starttime)/1000.0<<endl;
 		return true;
 	} else {
 		return false;
@@ -77,7 +75,7 @@ Mat imgProcessing(Mat img)
 {
    Mat tmp;
 
-  triThreshold(img, tmp, 2, 170, 120);
+  triThreshold(img, tmp, 2, 180, 100);
   //medianBlur(tmp, tmp, 5);
   GaussianBlur(tmp, tmp, Size(5, 5), 1.5);
 
@@ -143,7 +141,7 @@ int main()
     if(c == 27) {
       break;
     }
-    //cout<<"  T="<<double(clock()-lasttime)/1000<<endl;
+    cout<<"  T="<<double(clock()-lasttime)/CLOCKS_PER_SEC<<endl;
   }
 
   running = false;
