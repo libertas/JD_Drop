@@ -65,7 +65,7 @@ bool triThreshold(Mat src, Mat &dst, uint8_t num, uint8_t high, uint8_t low)
 	}
 
 		dst = tmp;
-		//cout<<"\t\tT="<<double(clock()-starttime)/1000.0<<endl;
+		cout<<"\t\tT="<<double(clock()-starttime)/1000.0<<endl;
 		return true;
 	} else {
 		return false;
@@ -77,7 +77,7 @@ Mat imgProcessing(Mat img)
 {
    Mat tmp;
 
-  triThreshold(img, tmp, 2, 170, 170);
+  triThreshold(img, tmp, 2, 170, 120);
   //medianBlur(tmp, tmp, 5);
   GaussianBlur(tmp, tmp, Size(5, 5), 1.5);
 
@@ -125,7 +125,7 @@ int main()
 
   while(1) {
     lasttime = clock();
-	camera_thr();
+    camera_thr();
 
     //frameLock.lock();
     img = imgProcessing(camFrame);
@@ -133,8 +133,9 @@ int main()
 
     //grayLock.lock();
     gray = img;
-	SimComMain();
-	imshow("gray", gray);
+    
+    SimComMain();
+    imshow("gray", gray);
     moveWindow("gray", 0, 0);
     //grayLock.unlock();
 
