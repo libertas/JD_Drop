@@ -1,5 +1,4 @@
 #include <mutex>
-#include <omp.h>
 #include <opencv2/opencv.hpp>
 #include <thread>
 #include <time.h>
@@ -44,7 +43,6 @@ bool triThreshold(Mat src, Mat &dst, uint8_t num, uint8_t high, uint8_t low)
 		clock_t starttime = clock();
 		Mat tmp(src.rows, src.cols, CV_8U, Scalar(0));
 
-		// #pragma omp parallel for num_threads(8)
 		for(int i = 0; i < src.rows; i++) {
 			for(int j = 0; j < src.cols; j++) {
 				bool flag = true;
