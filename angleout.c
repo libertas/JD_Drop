@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "AngleOut.h"
+#include "angleout.h"
 
 using namespace cv;
 using namespace std;
