@@ -4,11 +4,11 @@ CV_INCLUDE = -I/usr/local/include/opencv -I/usr/local/include
 CV_LIBS = -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab
 
 TARGET = main
-OBJS = main.o SimCom.o PhysicalLayer.o DataLinkLayer.o ServiceLayer.o Verify.o CharQueue.o
+OBJS = main.o angleout.o SimCom.o PhysicalLayer.o DataLinkLayer.o ServiceLayer.o Verify.o CharQueue.o
 
 
 $(TARGET): $(OBJS)
-	$(CC) -o $(TARGET) $(CFLAGS) $(CV_LIBS) $(OBJS) -l pthread -pthread -l serial 
+	$(CC) -o $(TARGET) $(CFLAGS) $(CV_LIBS) $(OBJS) -l pthread -pthread -l serial
 
 $(OBJS):%.o:%.c
 	$(CC) -c $(CFLAGS) $(CV_INCLUDE) -pthread $< -o $@

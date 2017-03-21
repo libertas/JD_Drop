@@ -6,6 +6,7 @@
 #include <math.h>
 #include <unistd.h>
 
+#include "angleout.h"
 #include "ServiceLayer.h"
 #include "PhysicalLayer.h"
 
@@ -47,10 +48,10 @@ int gravityCenter(Mat src, CvPoint &center)
 			}
 		}
 	}
-	
+
 	center.x = cvRound(xsum / count);
 	center.y = cvRound(ysum / count);
-	
+
 	return 0;
 }
 
@@ -113,17 +114,17 @@ void SimComDaemon()
 {
 	  sl_config(0, callback0);
 	  sl_config(1, callback1);
-	
+
 	  if(!sl_init()) {
 	    printf("Unable to open the serial port\n");
 	    return;
 	  } else {
 	    printf("Serial port opened\n");
 	  }
-  
+
 	thread sds(SimComDaemonSend);
 	thread sdr(SimComDaemonReceive);
-	
+
 	sds.join();
 	sdr.join();
 }
@@ -131,22 +132,29 @@ void SimComDaemon()
 int SimComMain()
 {
   CvPoint cent;
+
   uint16_t xy[2];
+	float angle;
+
   char *pc = (char*)xy;
+	char *pc1 = (char*)(&angle);
   if(running) {
 	  //grayLock.lock();
-	  
+
 	  gravityCenter(gray, cent);
-	  
+		angle = getAngle(gray);
+		cout<<"angle:"<<angle<<endl;
+
 	  //grayLock.unlock();
-	  
+
 	  xy[0] = cent.x;
 	  xy[1] = cent.y;
 	  sl_send(2, 2, pc, 4);
-	  
+		sl_send(2, 3, pc1, 4);
+
 	  //usleep(50000);
   }
-	
+
   //char c;
 
   //int count = 0;
@@ -157,11 +165,11 @@ int SimComMain()
 
   //while(running) {
 	  //usleep(400000);
-	  
+
       //float x[] = {0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0};
       //float y[] = {2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0, 2.5, 0, 0};
       //float angle[] = {0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0, 0, -2.266, 0};
-      
+
       //move_to_point(x[step], y[step], angle[step]);
       //printf("moving to %f, %f, %f\n", x[step] + offset_x, y[step] + offset_y, angle[step]);
       //if(step < 14\
@@ -175,4 +183,3 @@ int SimComMain()
 
   return 0;
 }
-
