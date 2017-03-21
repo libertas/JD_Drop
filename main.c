@@ -75,7 +75,7 @@ Mat imgProcessing(Mat img)
 {
    Mat tmp;
 
-  triThreshold(img, tmp, 2, 180, 100);
+  triThreshold(img, tmp, 2, 220, 120);
   //medianBlur(tmp, tmp, 5);
   GaussianBlur(tmp, tmp, Size(5, 5), 1.5);
 
@@ -141,7 +141,7 @@ int main()
     if(c == 27) {
       break;
     }
-    cout<<"  T="<<double(clock()-lasttime)/CLOCKS_PER_SEC<<endl;
+    //cout<<"  T="<<double(clock()-lasttime)/CLOCKS_PER_SEC<<endl;
   }
 
   running = false;
